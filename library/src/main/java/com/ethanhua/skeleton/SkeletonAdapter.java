@@ -1,11 +1,12 @@
 package com.ethanhua.skeleton;
 
-import android.support.annotation.IntRange;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.IntRange;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import io.supercharge.shimmerlayout.ShimmerLayout;
+import com.facebook.shimmer.ShimmerFrameLayout;
+
 
 /**
  * Created by ethanhua on 2017/7/29.
@@ -38,11 +39,8 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (mShimmer) {
-            ShimmerLayout layout = (ShimmerLayout) holder.itemView;
-            layout.setShimmerAnimationDuration(mShimmerDuration);
-            layout.setShimmerAngle(mShimmerAngle);
-            layout.setShimmerColor(mColor);
-            layout.startShimmerAnimation();
+            ShimmerFrameLayout layout = (ShimmerFrameLayout) holder.itemView;
+            layout.startShimmer();
         }
     }
 

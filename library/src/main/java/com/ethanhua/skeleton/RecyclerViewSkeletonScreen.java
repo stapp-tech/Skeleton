@@ -1,11 +1,11 @@
 package com.ethanhua.skeleton;
 
-import android.support.annotation.ArrayRes;
-import android.support.annotation.ColorRes;
-import android.support.annotation.IntRange;
-import android.support.annotation.LayoutRes;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.ArrayRes;
+import androidx.annotation.ColorRes;
+import androidx.annotation.IntRange;
+import androidx.annotation.LayoutRes;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by ethanhua on 2017/7/29.
@@ -59,7 +59,7 @@ public class RecyclerViewSkeletonScreen implements SkeletonScreen {
 
         public Builder(RecyclerView recyclerView) {
             this.mRecyclerView = recyclerView;
-            this.mShimmerColor = ContextCompat.getColor(recyclerView.getContext(), R.color.shimmer_color);
+            this.mShimmerColor = ContextCompat.getColor(recyclerView.getContext(), android.R.color.white);
         }
 
         /**
