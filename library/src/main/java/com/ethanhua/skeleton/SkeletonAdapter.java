@@ -1,10 +1,11 @@
 package com.ethanhua.skeleton;
 
-import androidx.annotation.IntRange;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.facebook.shimmer.Shimmer;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 
@@ -17,10 +18,7 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private int mItemCount;
     private int mLayoutReference;
     private int[] mLayoutArrayReferences;
-    private int mColor;
-    private boolean mShimmer;
-    private int mShimmerDuration;
-    private int mShimmerAngle;
+    private Shimmer mShimmer;
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -28,8 +26,10 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (doesArrayOfLayoutsExist()) {
             mLayoutReference = viewType;
         }
-        if (mShimmer) {
-            return new ShimmerViewHolder(inflater, parent, mLayoutReference);
+        if (mShimmer != null) {
+            ShimmerViewHolder viewHolder = new ShimmerViewHolder(inflater, parent, mLayoutReference);
+            viewHolder.setShimmer(mShimmer);
+            return viewHolder;
         }
 
         return new RecyclerView.ViewHolder(inflater.inflate(mLayoutReference, parent, false)) {
@@ -38,7 +38,7 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (mShimmer) {
+        if (mShimmer != null) {
             ShimmerFrameLayout layout = (ShimmerFrameLayout) holder.itemView;
             layout.startShimmer();
         }
@@ -46,7 +46,7 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemViewType(int position) {
-        if(doesArrayOfLayoutsExist()) {
+        if (doesArrayOfLayoutsExist()) {
             return getCorrectLayoutItem(position);
         }
         return super.getItemViewType(position);
@@ -74,24 +74,12 @@ public class SkeletonAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.mItemCount = itemCount;
     }
 
-    public void setShimmerColor(int color) {
-        this.mColor = color;
-    }
-
-    public void shimmer(boolean shimmer) {
+    public void shimmer(Shimmer shimmer) {
         this.mShimmer = shimmer;
     }
 
-    public void setShimmerDuration(int shimmerDuration) {
-        this.mShimmerDuration = shimmerDuration;
-    }
-
-    public void setShimmerAngle(@IntRange(from = 0, to = 30) int shimmerAngle) {
-        this.mShimmerAngle = shimmerAngle;
-    }
-
     public int getCorrectLayoutItem(int position) {
-        if(doesArrayOfLayoutsExist()) {
+        if (doesArrayOfLayoutsExist()) {
             return mLayoutArrayReferences[position % mLayoutArrayReferences.length];
         }
         return mLayoutReference;

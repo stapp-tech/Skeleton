@@ -1,15 +1,14 @@
 package com.ethanhua.skeleton;
 
-import androidx.annotation.ColorRes;
-import androidx.annotation.IntRange;
-import androidx.annotation.LayoutRes;
-import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.annotation.LayoutRes;
+
+import com.facebook.shimmer.Shimmer;
 import com.facebook.shimmer.ShimmerFrameLayout;
 
 /**
@@ -21,18 +20,12 @@ public class ViewSkeletonScreen implements SkeletonScreen {
     private final ViewReplacer mViewReplacer;
     private final View mActualView;
     private final int mSkeletonResID;
-    private final int mShimmerColor;
-    private final boolean mShimmer;
-    private final int mShimmerDuration;
-    private final int mShimmerAngle;
+    private final Shimmer mShimmer;
 
     private ViewSkeletonScreen(Builder builder) {
         mActualView = builder.mView;
         mSkeletonResID = builder.mSkeletonLayoutResID;
         mShimmer = builder.mShimmer;
-        mShimmerDuration = builder.mShimmerDuration;
-        mShimmerAngle = builder.mShimmerAngle;
-        mShimmerColor = builder.mShimmerColor;
         mViewReplacer = new ViewReplacer(builder.mView);
     }
 
@@ -43,6 +36,8 @@ public class ViewSkeletonScreen implements SkeletonScreen {
         if (lp != null) {
             shimmerLayout.setLayoutParams(lp);
         }
+        Shimmer shimmer = this.mShimmer != null ? this.mShimmer : new Shimmer.ColorHighlightBuilder().build();
+        shimmerLayout.setShimmer(shimmer);
         shimmerLayout.addView(innerView);
         shimmerLayout.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
@@ -66,7 +61,7 @@ public class ViewSkeletonScreen implements SkeletonScreen {
             return null;
         }
         ViewGroup parentView = (ViewGroup) viewParent;
-        if (mShimmer) {
+        if (mShimmer != null) {
             return generateShimmerContainerLayout(parentView);
         }
         return LayoutInflater.from(mActualView.getContext()).inflate(mSkeletonResID, parentView, false);
@@ -91,14 +86,10 @@ public class ViewSkeletonScreen implements SkeletonScreen {
     public static class Builder {
         private final View mView;
         private int mSkeletonLayoutResID;
-        private boolean mShimmer = true;
-        private int mShimmerColor;
-        private int mShimmerDuration = 1000;
-        private int mShimmerAngle = 20;
+        private Shimmer mShimmer = null;
 
         public Builder(View view) {
             this.mView = view;
-            this.mShimmerColor = ContextCompat.getColor(mView.getContext(), android.R.color.white);
         }
 
         /**
@@ -110,37 +101,10 @@ public class ViewSkeletonScreen implements SkeletonScreen {
         }
 
         /**
-         * @param shimmerColor the shimmer color
+         * @param shimmer shimmer
          */
-        public Builder color(@ColorRes int shimmerColor) {
-            this.mShimmerColor = ContextCompat.getColor(mView.getContext(), shimmerColor);
-            return this;
-        }
-
-        /**
-         * @param shimmer whether show shimmer animation
-         */
-        public ViewSkeletonScreen.Builder shimmer(boolean shimmer) {
+        public ViewSkeletonScreen.Builder shimmer(Shimmer shimmer) {
             this.mShimmer = shimmer;
-            return this;
-        }
-
-        /**
-         * the duration of the animation , the time it will take for the highlight to move from one end of the layout
-         * to the other.
-         *
-         * @param shimmerDuration Duration of the shimmer animation, in milliseconds
-         */
-        public ViewSkeletonScreen.Builder duration(int shimmerDuration) {
-            this.mShimmerDuration = shimmerDuration;
-            return this;
-        }
-
-        /**
-         * @param shimmerAngle the angle of the shimmer effect in clockwise direction in degrees.
-         */
-        public ViewSkeletonScreen.Builder angle(@IntRange(from = 0, to = 30) int shimmerAngle) {
-            this.mShimmerAngle = shimmerAngle;
             return this;
         }
 
