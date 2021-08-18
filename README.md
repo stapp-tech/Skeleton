@@ -13,7 +13,7 @@ It now uses a memory optimised version of shimmer animation so it is even faster
 In your build.gradle:
 ```
 dependencies {
-    implementation 'com.github.stapp-tech:Skeleton:1.3.0'
+    implementation 'com.github.stapp-tech:Skeleton:1.3.1'
 }
 ```
 
