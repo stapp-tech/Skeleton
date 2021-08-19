@@ -1,11 +1,10 @@
 package com.ethanhua.skeleton;
 
-import androidx.annotation.ArrayRes;
+import androidx.annotation.ColorRes;
+import androidx.annotation.IntRange;
 import androidx.annotation.LayoutRes;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.facebook.shimmer.Shimmer;
 
 /**
  * Created by ethanhua on 2017/7/29.
@@ -14,7 +13,7 @@ import com.facebook.shimmer.Shimmer;
 public class RecyclerViewSkeletonScreen implements SkeletonScreen {
 
     private final RecyclerView mRecyclerView;
-    private final RecyclerView.Adapter mActualAdapter;
+    private final RecyclerView.Adapter<?> mActualAdapter;
     private final SkeletonAdapter mSkeletonAdapter;
     private final boolean mRecyclerViewFrozen;
 
@@ -24,8 +23,10 @@ public class RecyclerViewSkeletonScreen implements SkeletonScreen {
         mSkeletonAdapter = new SkeletonAdapter();
         mSkeletonAdapter.setItemCount(builder.mItemCount);
         mSkeletonAdapter.setLayoutReference(builder.mItemResID);
-        mSkeletonAdapter.setArrayOfLayoutReferences(builder.mItemsResIDArray);
         mSkeletonAdapter.shimmer(builder.mShimmer);
+        mSkeletonAdapter.setShimmerColor(builder.mShimmerColor);
+        mSkeletonAdapter.setShimmerAngle(builder.mShimmerAngle);
+        mSkeletonAdapter.setShimmerDuration(builder.mShimmerDuration);
         mRecyclerViewFrozen = builder.mFrozen;
     }
 
@@ -42,23 +43,27 @@ public class RecyclerViewSkeletonScreen implements SkeletonScreen {
         mRecyclerView.setAdapter(mActualAdapter);
     }
 
+    @SuppressWarnings("unused")
     public static class Builder {
-        private RecyclerView.Adapter mActualAdapter;
+        private RecyclerView.Adapter<?> mActualAdapter;
         private final RecyclerView mRecyclerView;
-        private Shimmer mShimmer = null;
+        private boolean mShimmer = true;
         private int mItemCount = 10;
         private int mItemResID = R.layout.layout_default_item_skeleton;
-        private int[] mItemsResIDArray;
+        private int mShimmerColor;
+        private int mShimmerDuration = 1000;
+        private int mShimmerAngle = 20;
         private boolean mFrozen = true;
 
         public Builder(RecyclerView recyclerView) {
             this.mRecyclerView = recyclerView;
+            this.mShimmerColor = ContextCompat.getColor(recyclerView.getContext(), R.color.color_shimmer);
         }
 
         /**
          * @param adapter the target recyclerView actual adapter
          */
-        public Builder adapter(RecyclerView.Adapter adapter) {
+        public Builder adapter(RecyclerView.Adapter<?> adapter) {
             this.mActualAdapter = adapter;
             return this;
         }
@@ -72,10 +77,37 @@ public class RecyclerViewSkeletonScreen implements SkeletonScreen {
         }
 
         /**
-         * @param shimmer shimmer
+         * @param shimmer whether show shimmer animation
          */
-        public Builder shimmer(Shimmer shimmer) {
+        public Builder shimmer(boolean shimmer) {
             this.mShimmer = shimmer;
+            return this;
+        }
+
+        /**
+         * the duration of the animation , the time it will take for the highlight to move from one end of the layout
+         * to the other.
+         *
+         * @param shimmerDuration Duration of the shimmer animation, in milliseconds
+         */
+        public Builder duration(int shimmerDuration) {
+            this.mShimmerDuration = shimmerDuration;
+            return this;
+        }
+
+        /**
+         * @param shimmerColor the shimmer color
+         */
+        public Builder color(@ColorRes int shimmerColor) {
+            this.mShimmerColor = ContextCompat.getColor(mRecyclerView.getContext(), shimmerColor);
+            return this;
+        }
+
+        /**
+         * @param shimmerAngle the angle of the shimmer effect in clockwise direction in degrees.
+         */
+        public Builder angle(@IntRange(from = 0, to = 30) int shimmerAngle) {
+            this.mShimmerAngle = shimmerAngle;
             return this;
         }
 
@@ -84,14 +116,6 @@ public class RecyclerViewSkeletonScreen implements SkeletonScreen {
          */
         public Builder load(@LayoutRes int skeletonLayoutResID) {
             this.mItemResID = skeletonLayoutResID;
-            return this;
-        }
-
-        /**
-         * @param skeletonLayoutResIDs the loading array of skeleton layoutResID
-         */
-        public Builder loadArrayOfLayouts(@ArrayRes int[] skeletonLayoutResIDs) {
-            this.mItemsResIDArray = skeletonLayoutResIDs;
             return this;
         }
 

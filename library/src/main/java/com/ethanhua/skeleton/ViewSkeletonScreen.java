@@ -6,10 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.IntRange;
 import androidx.annotation.LayoutRes;
+import androidx.core.content.ContextCompat;
 
-import com.facebook.shimmer.Shimmer;
-import com.facebook.shimmer.ShimmerFrameLayout;
+import io.supercharge.shimmerlayout.ShimmerLayout;
 
 /**
  * Created by ethanhua on 2017/7/29.
@@ -20,37 +22,44 @@ public class ViewSkeletonScreen implements SkeletonScreen {
     private final ViewReplacer mViewReplacer;
     private final View mActualView;
     private final int mSkeletonResID;
-    private final Shimmer mShimmer;
+    private final int mShimmerColor;
+    private final boolean mShimmer;
+    private final int mShimmerDuration;
+    private final int mShimmerAngle;
 
     private ViewSkeletonScreen(Builder builder) {
         mActualView = builder.mView;
         mSkeletonResID = builder.mSkeletonLayoutResID;
         mShimmer = builder.mShimmer;
+        mShimmerDuration = builder.mShimmerDuration;
+        mShimmerAngle = builder.mShimmerAngle;
+        mShimmerColor = builder.mShimmerColor;
         mViewReplacer = new ViewReplacer(builder.mView);
     }
 
-    private ShimmerFrameLayout generateShimmerContainerLayout(ViewGroup parentView) {
-        final ShimmerFrameLayout shimmerLayout = (ShimmerFrameLayout) LayoutInflater.from(mActualView.getContext()).inflate(R.layout.layout_shimmer, parentView, false);
+    private ShimmerLayout generateShimmerContainerLayout(ViewGroup parentView) {
+        final ShimmerLayout shimmerLayout = (ShimmerLayout) LayoutInflater.from(mActualView.getContext()).inflate(R.layout.layout_shimmer, parentView, false);
+        shimmerLayout.setShimmerColor(mShimmerColor);
+        shimmerLayout.setShimmerAngle(mShimmerAngle);
+        shimmerLayout.setShimmerAnimationDuration(mShimmerDuration);
         View innerView = LayoutInflater.from(mActualView.getContext()).inflate(mSkeletonResID, shimmerLayout, false);
         ViewGroup.LayoutParams lp = innerView.getLayoutParams();
         if (lp != null) {
             shimmerLayout.setLayoutParams(lp);
         }
-        Shimmer shimmer = this.mShimmer != null ? this.mShimmer : new Shimmer.ColorHighlightBuilder().build();
-        shimmerLayout.setShimmer(shimmer);
         shimmerLayout.addView(innerView);
         shimmerLayout.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                shimmerLayout.startShimmer();
+                shimmerLayout.startShimmerAnimation();
             }
 
             @Override
             public void onViewDetachedFromWindow(View v) {
-                shimmerLayout.startShimmer();
+                shimmerLayout.stopShimmerAnimation();
             }
         });
-        shimmerLayout.startShimmer();
+        shimmerLayout.startShimmerAnimation();
         return shimmerLayout;
     }
 
@@ -61,7 +70,7 @@ public class ViewSkeletonScreen implements SkeletonScreen {
             return null;
         }
         ViewGroup parentView = (ViewGroup) viewParent;
-        if (mShimmer != null) {
+        if (mShimmer) {
             return generateShimmerContainerLayout(parentView);
         }
         return LayoutInflater.from(mActualView.getContext()).inflate(mSkeletonResID, parentView, false);
@@ -77,8 +86,8 @@ public class ViewSkeletonScreen implements SkeletonScreen {
 
     @Override
     public void hide() {
-        if (mViewReplacer.getTargetView() instanceof ShimmerFrameLayout) {
-            ((ShimmerFrameLayout) mViewReplacer.getTargetView()).stopShimmer();
+        if (mViewReplacer.getTargetView() instanceof ShimmerLayout) {
+            ((ShimmerLayout) mViewReplacer.getTargetView()).stopShimmerAnimation();
         }
         mViewReplacer.restore();
     }
@@ -86,10 +95,14 @@ public class ViewSkeletonScreen implements SkeletonScreen {
     public static class Builder {
         private final View mView;
         private int mSkeletonLayoutResID;
-        private Shimmer mShimmer = null;
+        private boolean mShimmer = true;
+        private int mShimmerColor;
+        private int mShimmerDuration = 1000;
+        private int mShimmerAngle = 20;
 
         public Builder(View view) {
             this.mView = view;
+            this.mShimmerColor = ContextCompat.getColor(mView.getContext(), R.color.color_shimmer);
         }
 
         /**
@@ -101,10 +114,37 @@ public class ViewSkeletonScreen implements SkeletonScreen {
         }
 
         /**
-         * @param shimmer shimmer
+         * @param shimmerColor the shimmer color
          */
-        public ViewSkeletonScreen.Builder shimmer(Shimmer shimmer) {
+        public Builder color(@ColorRes int shimmerColor) {
+            this.mShimmerColor = ContextCompat.getColor(mView.getContext(), shimmerColor);
+            return this;
+        }
+
+        /**
+         * @param shimmer whether show shimmer animation
+         */
+        public ViewSkeletonScreen.Builder shimmer(boolean shimmer) {
             this.mShimmer = shimmer;
+            return this;
+        }
+
+        /**
+         * the duration of the animation , the time it will take for the highlight to move from one end of the layout
+         * to the other.
+         *
+         * @param shimmerDuration Duration of the shimmer animation, in milliseconds
+         */
+        public ViewSkeletonScreen.Builder duration(int shimmerDuration) {
+            this.mShimmerDuration = shimmerDuration;
+            return this;
+        }
+
+        /**
+         * @param shimmerAngle the angle of the shimmer effect in clockwise direction in degrees.
+         */
+        public ViewSkeletonScreen.Builder angle(@IntRange(from = 0, to = 30) int shimmerAngle) {
+            this.mShimmerAngle = shimmerAngle;
             return this;
         }
 
